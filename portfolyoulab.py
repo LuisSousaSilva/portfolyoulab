@@ -482,8 +482,6 @@ def plotly_table(df, width=990, height=500, columnwidth=[25], title=None , index
 
         data = [trace]
         fig = go.Figure(data=data, layout=layout)
-        py.iplot(fig, show_link=False, config={'modeBarButtonsToRemove': ['sendDataToCloud','hoverCompareCartesian'],
-                                               'displayModeBar': False})
 
 def get_quotes(tickers, names, normalize=False):
     Quotes = pd.read_csv('D:/GDrive/_GitHub/Backtester/Data/Cotacoes_diarias_all.csv', index_col='Date', parse_dates=True)[tickers].dropna()
@@ -1059,8 +1057,6 @@ def ichart(data, title='', colors=colors_list, yTitle='', xTitle='', style='norm
     return fig
 
 def compute_rolling_cagr(dataframe, years):
-    start_time = time.time()
-
     index = dataframe.index + pd.DateOffset(years=years)
 
     start = dataframe.index[0]
