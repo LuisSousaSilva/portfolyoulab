@@ -897,9 +897,22 @@ def compute_log_returns(prices):
     
     return np.log(prices) - np.log(prices.shift())
 
-def merge_time_series(df_1, df_2, how='outer'):
-    df = df_1.merge(df_2, how=how, left_index=True, right_index=True)
-    return df
+def merge_time_series(df_1, df_2, on='', how='outer'):
+    '''
+    on = 'dtindex'
+    '''
+    if on=='dtindex':
+        col_names = list(df_1.columns)
+        df_1.reset_index(inplace=True)
+        df_1.rename(columns={ df_1.columns[0]: "Date" }, inplace = True)
+        df_2.reset_index(inplace=True)
+        df_2.rename(columns={ df_2.columns[0]: "Date" }, inplace = True)
+        df = pd.merge(inv_quotes, df_2, how=how, on=['Date'] + col_names)
+        df.set_index('Date', inplace=True)
+        return df
+    else:
+        df = df_1.merge(df_2, how=how, left_index=True, right_index=True)
+        return df
 
 colors_list=['royalblue', 'darkorange',
            'dimgrey', 'rgb(86, 53, 171)',  'rgb(44, 160, 44)',
