@@ -131,18 +131,20 @@ def compute_performance_table(dataframe, years='si', freq='days'):
         return df
 
     if years == 'ytd':
+        epoch_year = date.today().year
+        last_year = epoch_year-1
         last_year_end = dataframe.loc[str(last_year)].iloc[-1].name
         dataframe = dataframe[last_year_end:]
 
-        df = pd.DataFrame([compute_cagr(dataframe, years=years),
+        df = pd.DataFrame([compute_return(dataframe, years=years),
                     compute_StdDev(dataframe), compute_sharpe(dataframe),
                     compute_max_DD(dataframe), compute_mar(dataframe)])
-        df.index = ['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
+        df.index = ['Return', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
 
         df = round(df.transpose(), 2)
 
         # Colocar percentagens
-        df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
+        df['Return'] = (df['Return'] / 100).apply('{:.2%}'.format)
         df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
         df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
 
