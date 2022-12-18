@@ -102,7 +102,7 @@ def compute_sharpe(dataframe, years='', freq='days'):
     '''    
     return compute_cagr(dataframe, years).div(compute_StdDev(dataframe, freq))
 
-def compute_performance_table(dataframe, years='si', freq='days'):    
+def compute_performance_table(dataframe, years='si', freq='days', numeric=False, ms_table=False, title=True):
     '''
     Function to calculate a performance table given a dataframe of prices.
     Takes into account the frequency of the data.
@@ -119,84 +119,15 @@ def compute_performance_table(dataframe, years='si', freq='days'):
         df = round(df.transpose(), 2)
         
         # Colocar percentagens
-        df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
-        df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
-        df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
+        if numeric==False:
+            df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
+            df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
+            df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
         
-        start = str(dataframe.index[0])[0:10]
-        end   = str(dataframe.index[-1])[0:10]
-        # print_title('Performance from ' + start + ' to ' + end + ' (≈ ' + str(round(years, 1)) + ' years)')
-        
-        # Return object
-        return df
-
-    if years == 'ytd':
-        epoch_year = date.today().year
-        last_year = epoch_year-1
-        last_year_end = dataframe.loc[str(last_year)].iloc[-1].name
-        dataframe = dataframe[last_year_end:]
-
-        df = pd.DataFrame([compute_return(dataframe, years=years),
-                    compute_StdDev(dataframe), compute_sharpe(dataframe),
-                    compute_max_DD(dataframe), compute_mar(dataframe)])
-        df.index = ['Return', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
-
-        df = round(df.transpose(), 2)
-
-        # Colocar percentagens
-        df['Return'] = (df['Return'] / 100).apply('{:.2%}'.format)
-        df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
-        df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
-
-        return df
-
-    else:
-        dataframe = filter_by_date(dataframe, years)
-        df = pd.DataFrame([compute_cagr(dataframe, years=years),
-                           compute_StdDev(dataframe), compute_sharpe(dataframe),
-                           compute_max_DD(dataframe), compute_mar(dataframe)])
-        df.index = ['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
-
-        df = round(df.transpose(), 2)
-
-        # Colocar percentagens
-        df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
-        df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
-        df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
-        
-        start = str(dataframe.index[0])[0:10]
-        end   = str(dataframe.index[-1])[0:10]
-        
-        if years == 1:
-            print_title('Performance from ' + start + ' to ' + end + ' (' + str(years) + ' year)')
-        else:
-            print_title('Performance from ' + start + ' to ' + end + ' (' + str(years) + ' years)')
-            
-        return df
-
-def compute_performance_table_no_title(dataframe, years='si', freq='days', ms_table=False):    
-    '''
-    Function to calculate a performance table given a dataframe of prices.
-    Takes into account the frequency of the data.
-    ''' 
-    
-    if years == 'si':
-        years = len(pd.date_range(dataframe.index[0], dataframe.index[-1], freq='D')) / 365.25
-        
-        df = pd.DataFrame([compute_cagr(dataframe, years),
-                           compute_StdDev(dataframe, freq),
-                           compute_sharpe(dataframe, years, freq), compute_max_DD(dataframe), compute_mar(dataframe)])
-        df.index = ['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
-        
-        df = round(df.transpose(), 2)
-        
-        # Colocar percentagens
-        df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
-        df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
-        df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
-        
-        start = str(dataframe.index[0])[0:10]
-        end   = str(dataframe.index[-1])[0:10]
+        if title:
+            start = str(dataframe.index[0])[0:10]
+            end   = str(dataframe.index[-1])[0:10]
+            print_title('Performance from ' + start + ' to ' + end + ' (≈ ' + str(round(years, 1)) + ' years)')
         
         # Return object
         return df
@@ -219,31 +150,46 @@ def compute_performance_table_no_title(dataframe, years='si', freq='days', ms_ta
         df = round(df.transpose(), 2)
 
         # Colocar percentagens
-        if ms_table:
-            df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
-        else:
-            df.index = ['Return', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
-        df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
-        df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
+        if numeric==False:
+            if ms_table:
+                df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
+            
+            else:
+                df['Return'] = (df['Return'] / 100).apply('{:.2%}'.format)
+
+            df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
+            df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
+
+        if title:
+            start = str(dataframe.index[0])[0:10]
+            end   = str(dataframe.index[-1])[0:10]
+            print_title('Performance from ' + start + ' to ' + end + ' (YTD)')
 
         return df
 
     else:
         dataframe = filter_by_date(dataframe, years)
         df = pd.DataFrame([compute_cagr(dataframe, years=years),
-                           compute_StdDev(dataframe), compute_sharpe(dataframe),
-                           compute_max_DD(dataframe), compute_mar(dataframe)])
+                        compute_StdDev(dataframe), compute_sharpe(dataframe),
+                        compute_max_DD(dataframe), compute_mar(dataframe)])
         df.index = ['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
 
         df = round(df.transpose(), 2)
 
         # Colocar percentagens
-        df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
-        df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
-        df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
-        
-        start = str(dataframe.index[0])[0:10]
-        end   = str(dataframe.index[-1])[0:10]
+        if numeric==False:
+            df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
+            df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
+            df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
+
+        if title:    
+            start = str(dataframe.index[0])[0:10]
+            end   = str(dataframe.index[-1])[0:10]
+            
+            if years == 1:
+                print_title('Performance from ' + start + ' to ' + end + ' (' + str(years) + ' year)')
+            else:
+                print_title('Performance from ' + start + ' to ' + end + ' (' + str(years) + ' years)')
             
         return df
 
