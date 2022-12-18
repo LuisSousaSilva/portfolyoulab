@@ -174,7 +174,7 @@ def compute_performance_table(dataframe, years='si', freq='days'):
             
         return df
 
-def compute_performance_table_no_title(dataframe, years='si', freq='days'):    
+def compute_performance_table_no_title(dataframe, years='si', freq='days', ms_table=False):    
     '''
     Function to calculate a performance table given a dataframe of prices.
     Takes into account the frequency of the data.
@@ -202,18 +202,27 @@ def compute_performance_table_no_title(dataframe, years='si', freq='days'):
         return df
 
     if years == 'ytd':
+        epoch_year = date.today().year
+        last_year = epoch_year-1
         last_year_end = dataframe.loc[str(last_year)].iloc[-1].name
         dataframe = dataframe[last_year_end:]
 
-        df = pd.DataFrame([compute_cagr(dataframe, years=years),
+        df = pd.DataFrame([compute_return(dataframe, years=years),
                     compute_StdDev(dataframe), compute_sharpe(dataframe),
                     compute_max_DD(dataframe), compute_mar(dataframe)])
-        df.index = ['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
+
+        if ms_table:
+            df.index = ['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
+        else:
+            df.index = ['Return', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
 
         df = round(df.transpose(), 2)
 
         # Colocar percentagens
-        df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
+        if ms_table:
+            df['CAGR'] = (df['CAGR'] / 100).apply('{:.2%}'.format)
+        else:
+            df.index = ['Return', 'StdDev', 'Sharpe', 'Max DD', 'MAR']
         df['StdDev'] = (df['StdDev'] / 100).apply('{:.2%}'.format)
         df['Max DD'] = (df['Max DD'] / 100).apply('{:.2%}'.format)
 
@@ -833,7 +842,7 @@ def compute_ms_performance_table(DataFrame, freq='days'):
 
     elif nr_of_days >= 365 and nr_of_days < 365*3:
         df0 = compute_performance_table(DataFrame)
-        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd')
+        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd', ms_table=True)
         df1 = compute_performance_table_no_title(DataFrame, years=1)
         df = pd.concat([df0, df_ytd, df1])
         df.index = ['S.I.', 'YTD', '1 Year']
@@ -841,7 +850,7 @@ def compute_ms_performance_table(DataFrame, freq='days'):
 
     elif nr_of_days >= 365*3 and nr_of_days < 365*5:
         df0 = compute_performance_table(DataFrame)
-        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd')
+        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd', ms_table=True)
         df1 = compute_performance_table_no_title(DataFrame, years=1)
         df3 = compute_performance_table_no_title(DataFrame, years=3)
         df = pd.concat([df0, df_ytd, df1, df3])
@@ -850,7 +859,7 @@ def compute_ms_performance_table(DataFrame, freq='days'):
 
     if nr_of_days >= 365*5 and nr_of_days < 365*10:
         df0 = compute_performance_table(DataFrame)
-        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd')
+        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd', ms_table=True)
         df1 = compute_performance_table_no_title(DataFrame, years=1)
         df3 = compute_performance_table_no_title(DataFrame, years=3)
         df5 = compute_performance_table_no_title(DataFrame, years=5)
@@ -860,7 +869,7 @@ def compute_ms_performance_table(DataFrame, freq='days'):
 
     elif nr_of_days >= 365*10 and nr_of_days < 365*15:
         df0 = compute_performance_table(DataFrame)
-        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd')
+        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd', ms_table=True)
         df1 = compute_performance_table_no_title(DataFrame, years=1)
         df3 = compute_performance_table_no_title(DataFrame, years=3)
         df5 = compute_performance_table_no_title(DataFrame, years=5)
@@ -872,7 +881,7 @@ def compute_ms_performance_table(DataFrame, freq='days'):
     # elif nr_of_days >= 365*15 and nr_of_days < 365*20:
     else:
         df0 = compute_performance_table(DataFrame)
-        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd')
+        df_ytd = compute_performance_table_no_title(DataFrame, years='ytd', ms_table=True)
         df1 = compute_performance_table_no_title(DataFrame, years=1)
         df3 = compute_performance_table_no_title(DataFrame, years=3)
         df5 = compute_performance_table_no_title(DataFrame, years=5)
@@ -880,7 +889,7 @@ def compute_ms_performance_table(DataFrame, freq='days'):
         df15= compute_performance_table_no_title(DataFrame, years=15)
         df = pd.concat([df0, df_ytd, df1, df3, df5, df10, df15])
         df.index = ['S.I.', 'YTD', '1 Year', '3 Years', '5 Years', '10 Years', '15 Years']
-        df = df[['CAGR', 'Return', 'StdDev', 'Sharpe', 'Max DD', 'MAR']]
+        df = df[['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']]
 
     return df
 
