@@ -62,19 +62,33 @@ def compute_return(dataframe, years=''):
 def compute_max_DD(dataframe):
     return compute_drawdowns(dataframe).min()
 
-def compute_cagr(dataframe, years=''):
-    '''
-    Function to calculate CAGR given a dataframe of prices
-    '''
-    if isinstance(years, int):
-        years = years
-        dataframe = filter_by_date(dataframe, years=years)
+def compute_cagr(dataframe, years='', decimals=2):	
+    '''	
+    Function to calculate CAGR given a dataframe of prices	
+    '''	
+    if years == 'ytd':	
+        last_year_end = dataframe.loc[str(last_year)].iloc[-1].name	
+        dataframe = dataframe[last_year_end:]	
+        hpr = dataframe.iloc[-1][0] /dataframe.iloc[0][0] - 1        	
+        ytd_return = hpr * 100	
+        return round(ytd_return, decimals)	
+    elif isinstance(years, int):	
+        d1 = dataframe.index[0]	
+        d2 = dataframe.index[-1]	
+        # difference between dates in timedelta	
+        delta = d2 - d1	
+        days = delta.days	
+        years = years	
+        if days > years * 364:	
+            dataframe = filter_by_date(dataframe, years=years)	
+            value = (dataframe.iloc[-1].div(dataframe.iloc[0])).pow(1 / years).sub(1).mul(100)	
+            return round(value, decimals)	
+        else:	
+            return str('-')	
+    	
+    else:	
+        years = len(pd.date_range(dataframe.index[0], dataframe.index[-1], freq='D')) / 365        	
         return(dataframe.iloc[-1].div(dataframe.iloc[0])).pow(1 / years).sub(1).mul(100)
-    
-    else:
-        years = len(pd.date_range(dataframe.index[0], dataframe.index[-1], freq='D')) / 365
-        
-    return(dataframe.iloc[-1].div(dataframe.iloc[0])).pow(1 / years).sub(1).mul(100)
 
 def compute_mar(dataframe):
     '''
@@ -779,60 +793,61 @@ def compute_costs(DataFrame, percentage, sessions_per_year=365, Nome='Price'):
     return DataFrame
 
 def compute_ms_performance_table(DataFrame, freq='days', numeric=False):
+    DataFrame = DataFrame.ffill().dropna()
     nr_of_days = int(str(DataFrame.index[-1] - DataFrame.index[0])[0:4])
 
     if nr_of_days < 365:
-        df = compute_performance_table(DataFrame, freq=freq, title=False, numeric=numeric)
+        df = compute_performance_table(DataFrame, freq=freq, title=False, numeric=True)
         df.index = ['S.I.']
         df = df[['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']]
 
     elif nr_of_days >= 365 and nr_of_days < 365*3:
-        df0 = compute_performance_table(DataFrame, title=False, numeric=numeric)
-        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, title=False, numeric=numeric)
-        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=numeric)
+        df0 = compute_performance_table(DataFrame, title=False, numeric=True)
+        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, title=False, numeric=True)
+        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=True)
         df = pd.concat([df0, df_ytd, df1])
         df.index = ['S.I.', 'YTD', '1 Year']
         df = df[['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']]
 
     elif nr_of_days >= 365*3 and nr_of_days < 365*5:
-        df0 = compute_performance_table(DataFrame, title=False, numeric=numeric)
-        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, title=False, numeric=numeric)
-        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=numeric)
-        df3 = compute_performance_table(DataFrame, years=3, title=False, numeric=numeric)
+        df0 = compute_performance_table(DataFrame, title=False, numeric=True)
+        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, title=False, numeric=True)
+        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=True)
+        df3 = compute_performance_table(DataFrame, years=3, title=False, numeric=True)
         df = pd.concat([df0, df_ytd, df1, df3])
         df.index = ['S.I.', 'YTD', '1 Year', '3 Years']
         df = df[['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']]
 
     if nr_of_days >= 365*5 and nr_of_days < 365*10:
-        df0 = compute_performance_table(DataFrame, title=False, numeric=numeric)
-        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, numeric=numeric)
-        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=numeric)
-        df3 = compute_performance_table(DataFrame, years=3, title=False, numeric=numeric)
-        df5 = compute_performance_table(DataFrame, years=5, title=False, numeric=numeric)
+        df0 = compute_performance_table(DataFrame, title=False, numeric=True)
+        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, numeric=True, title=False)
+        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=True)
+        df3 = compute_performance_table(DataFrame, years=3, title=False, numeric=True)
+        df5 = compute_performance_table(DataFrame, years=5, title=False, numeric=True)
         df = pd.concat([df0, df_ytd, df1, df3, df5])
         df.index = ['S.I.', 'YTD', '1 Year', '3 Years', '5 Years']
         df = df[['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']]
 
     elif nr_of_days >= 365*10 and nr_of_days < 365*15:
-        df0 = compute_performance_table(DataFrame, title=False, numeric=numeric)
-        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, title=False, numeric=numeric)
-        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=numeric)
-        df3 = compute_performance_table(DataFrame, years=3, title=False, numeric=numeric)
-        df5 = compute_performance_table(DataFrame, years=5, title=False, numeric=numeric)
-        df10 = compute_performance_table(DataFrame, years=10, title=False, numeric=numeric)
+        df0 = compute_performance_table(DataFrame, title=False, numeric=True)
+        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, title=False, numeric=True)
+        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=True)
+        df3 = compute_performance_table(DataFrame, years=3, title=False, numeric=True)
+        df5 = compute_performance_table(DataFrame, years=5, title=False, numeric=True)
+        df10 = compute_performance_table(DataFrame, years=10, title=False, numeric=True)
         df = pd.concat([df0, df_ytd, df1, df3, df5, df10])
         df.index = ['S.I.', 'YTD', '1 Year', '3 Years', '5 Years', '10 Years']
         df = df[['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']]
 
     # elif nr_of_days >= 365*15 and nr_of_days < 365*20:
     else:
-        df0 = compute_performance_table(DataFrame, title=False, numeric=numeric)
-        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, title=False, numeric=numeric)
-        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=numeric)
-        df3 = compute_performance_table(DataFrame, years=3, title=False, numeric=numeric)
-        df5 = compute_performance_table(DataFrame, years=5, title=False, numeric=numeric)
-        df10 = compute_performance_table(DataFrame, years=10, title=False, numeric=numeric)
-        df15= compute_performance_table(DataFrame, years=15, title=False, numeric=numeric)
+        df0 = compute_performance_table(DataFrame, title=False, numeric=True)
+        df_ytd = compute_performance_table(DataFrame, years='ytd', ms_table=True, title=False, numeric=True)
+        df1 = compute_performance_table(DataFrame, years=1, title=False, numeric=True)
+        df3 = compute_performance_table(DataFrame, years=3, title=False, numeric=True)
+        df5 = compute_performance_table(DataFrame, years=5, title=False, numeric=True)
+        df10 = compute_performance_table(DataFrame, years=10, title=False, numeric=True)
+        df15= compute_performance_table(DataFrame, years=15, title=False, numeric=True)
         df = pd.concat([df0, df_ytd, df1, df3, df5, df10, df15])
         df.index = ['S.I.', 'YTD', '1 Year', '3 Years', '5 Years', '10 Years', '15 Years']
         df = df[['CAGR', 'StdDev', 'Sharpe', 'Max DD', 'MAR']]
@@ -890,7 +905,7 @@ colors_list=['royalblue', 'darkorange',
 def ichart(data, title='', colors=colors_list, yTitle='', xTitle='', style='normal',
         width=990, height=500, hovermode='x', yticksuffix='', ytickprefix='',
         ytickformat="", source_text='', y_position_source='-0.125', xticksuffix='',
-        xtickprefix='', xtickformat="", dd_range=[-50, 0], y_axis_range_range=None,
+        xtickprefix='', xtickformat="", dd_range=[-50, 0], y_axis_range=None,
         log_y=False, image=''):
 
     '''
@@ -924,7 +939,7 @@ def ichart(data, title='', colors=colors_list, yTitle='', xTitle='', style='norm
             tickprefix=ytickprefix,
             tickfont=dict(color='#4D5663'),
             gridcolor='#E1E5ED',
-            range=y_axis_range_range,
+            range=y_axis_range,
             titlefont=dict(color='#4D5663'),
             zerolinecolor='#E1E5ED',
             title=yTitle,
