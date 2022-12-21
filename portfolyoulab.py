@@ -1114,10 +1114,14 @@ def color_negative_red(value):
   return 'color: %s' % color
 
 def compute_yearly_returns(dataframe, start='1900', end='2100', style='table',
-                        title='Yearly Returns', color=False, warning=True): 
+                        title='Yearly Returns', color=False, warning=True,
+                        numeric=False): 
     '''
     Style: table // string // chart
     '''
+
+    dataframe = dataframe.ffill().dropna()
+
     # Getting start date
     start = str(dataframe.index[0])[0:10]
 
@@ -1146,6 +1150,8 @@ def compute_yearly_returns(dataframe, start='1900', end='2100', style='table',
         yearly_returns = yearly_returns.style.format("{:.2%}")
         print_title(title)
 
+    elif style=='numeric':
+        yearly_returns = yearly_returns_numeric.copy()
     
     elif style=='table':
         yearly_returns = yearly_returns / 100
@@ -1154,7 +1160,6 @@ def compute_yearly_returns(dataframe, start='1900', end='2100', style='table',
 
     elif style=='numeric':
         yearly_returns = yearly_returns_numeric.copy()
-
 
     elif style=='string':
         for column in yearly_returns:
